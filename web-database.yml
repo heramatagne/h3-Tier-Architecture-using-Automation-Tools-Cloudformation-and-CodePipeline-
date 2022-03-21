@@ -1,0 +1,673 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  AWS CloudFormation generated template
+  --AWSMP::30ba0dc2-ba4a-48e4-a40c-cca1b4acf476::NEWGUID
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Application configuration
+        Parameters:
+          - ApplicationUsername
+          - ApplicationPassword
+          - InstancesType
+          - InstancesDataDiskType
+          - InstancesDataDiskSize
+      - Label:
+          default: Database configuration
+        Parameters:
+          - DatabasePassword
+          - DatabaseInstanceClass
+          - MultiAZ
+    ParameterLabels:
+      ApplicationUsername:
+        default: WordPress admin username
+      ApplicationPassword:
+        default: WordPress password
+      InstancesType:
+        default: Application instance type
+      InstancesDataDiskType:
+        default: Data disk type
+      InstancesDataDiskSize:
+        default: Data disk size
+      DatabaseInstanceClass:
+        default: Database class
+      MultiAZ:
+        default: Multi-AZ database
+      DatabasePassword:
+        default: Aurora admin password
+Parameters:
+  SSHKeyName:
+    Description: '[Required] SSH key name.'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    AllowedPattern: .+
+    ConstraintDescription: Your SSH Key cannot be blank. Please add an SSH key to the application.
+  OperatorEMail1:
+    NoEcho: true 
+    Description: Email address to notify if there are any scaling operations
+    Type: String
+    AllowedPattern: "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)"
+    ConstraintDescription: must be a valid email address.
+    Default: bbodjona@hotmail.com    
+  OperatorEMail2:
+    NoEcho: true  
+    Description: Email address to notify if there are any scaling operations
+    Type: String
+    AllowedPattern: "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)"
+    ConstraintDescription: must be a valid email address.
+    Default: tchanela@gmail.com    
+  OperatorEMail3:
+    NoEcho: true  
+    Description: Email address to notify if there are any scaling operations
+    Type: String
+    AllowedPattern: "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)"
+    ConstraintDescription: must be a valid email address.
+    Default: heramatagne@gmail.com
+  HTTPSCertificateArn:
+    Description: HTTPS Certificate 
+    Type: String
+    Default: arn:aws:acm:us-east-1:077641734270:certificate/f69e799a-50cb-4a5a-957f-78872f8427ef
+  InstancesDataDiskType:
+    Description: Select the disk type.
+    Type: String
+    Default: gp2
+    AllowedValues:
+      - standard
+      - gp2
+  InstancesDataDiskSize:
+    Description: 'Disk size in GB, this must be between 1 and 1024 GB.'
+    Type: Number
+    MinValue: '1'
+    MaxValue: '1024'
+    Default: '10'
+    ConstraintDescription: Your Data Disk Instance size must be between 1 and 1024 GB.
+  ApplicationPassword:
+    Description: >-
+      [Required] Admin password for WordPress - Between 8-32 characters; Include
+      at least one digit, upper case letter and no special characters.
+    Type: String
+    MinLength: 8
+    MaxLength: 32
+    AllowedPattern: '(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])^([a-zA-Z0-9]{8,32})$'
+    ConstraintDescription: >-
+      Your password must be between 8 and 32 characters, include at least one.
+      digit, upper case letter and no special characters.
+    NoEcho: true
+  ApplicationUsername:
+    Description: >-
+      IMPORTANT: This is the admin username you will use to log into the
+      application, and the password you set below will correspond to this admin
+      username. This is a default value, and can only be changed after you log
+      in.
+    Type: String
+    Default: Puma
+    AllowedValues:
+      - Puma
+  InstancesType:
+    Description: >-
+      Select the instance type for the WordPress instance. Please check that the
+      selected instance type is available in your region.
+    Type: String
+    Default: m5.large
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+      - t3.small
+      - t3a.small
+      - t3.medium
+      - t3a.medium
+      - t3.large
+      - t3.xlarge
+      - t3a.large
+      - t3a.xlarge
+      - t3.2xlarge
+      - t3a.2xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - m4.16xlarge
+      - m5.large
+      - m5.metal
+      - m5.xlarge
+      - m5a.large
+      - m5a.xlarge
+      - m5ad.large
+      - m5ad.xlarge
+      - m5d.large
+      - m5d.metal
+      - m5d.xlarge
+      - m5dn.large
+      - m5dn.metal
+      - m5dn.xlarge
+      - m5n.large
+      - m5n.metal
+      - m5n.xlarge
+      - m5zn.large
+      - m5zn.metal
+      - m5zn.xlarge
+      - m5.2xlarge
+      - m5a.2xlarge
+      - m5ad.2xlarge
+      - m5d.2xlarge
+      - m5dn.2xlarge
+      - m5n.2xlarge
+      - m5zn.2xlarge
+      - m5zn.3xlarge
+      - m5.4xlarge
+      - m5a.4xlarge
+      - m5ad.4xlarge
+      - m5d.4xlarge
+      - m5dn.4xlarge
+      - m5n.4xlarge
+      - m5zn.6xlarge
+      - m5.8xlarge
+      - m5a.8xlarge
+      - m5ad.8xlarge
+      - m5d.8xlarge
+      - m5dn.8xlarge
+      - m5n.8xlarge
+      - m5.12xlarge
+      - m5a.12xlarge
+      - m5ad.12xlarge
+      - m5d.12xlarge
+      - m5dn.12xlarge
+      - m5n.12xlarge
+      - m5zn.12xlarge
+      - m5.16xlarge
+      - m5a.16xlarge
+      - m5ad.16xlarge
+      - m5d.16xlarge
+      - m5dn.16xlarge
+      - m5n.16xlarge
+      - m5.24xlarge
+      - m5a.24xlarge
+      - m5ad.24xlarge
+      - m5d.24xlarge
+      - m5dn.24xlarge
+      - m5n.24xlarge
+      - cc2.8xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - c5.large
+      - c5.metal
+      - c5.xlarge
+      - c5a.large
+      - c5a.xlarge
+      - c5ad.large
+      - c5ad.xlarge
+      - c5d.large
+      - c5d.metal
+      - c5d.xlarge
+      - c5n.large
+      - c5n.metal
+      - c5n.xlarge
+      - c5.2xlarge
+      - c5a.2xlarge
+      - c5ad.2xlarge
+      - c5d.2xlarge
+      - c5n.2xlarge
+      - c5.4xlarge
+      - c5a.4xlarge
+      - c5ad.4xlarge
+      - c5d.4xlarge
+      - c5n.4xlarge
+      - c5a.8xlarge
+      - c5ad.8xlarge
+      - c5.9xlarge
+      - c5d.9xlarge
+      - c5n.9xlarge
+      - c5.12xlarge
+      - c5a.12xlarge
+      - c5ad.12xlarge
+      - c5d.12xlarge
+      - c5a.16xlarge
+      - c5ad.16xlarge
+      - c5.18xlarge
+      - c5d.18xlarge
+      - c5n.18xlarge
+      - c5.24xlarge
+      - c5a.24xlarge
+      - c5ad.24xlarge
+      - c5d.24xlarge
+      - cr1.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - r4.large
+      - r4.xlarge
+      - r4.2xlarge
+      - r4.4xlarge
+      - r4.8xlarge
+      - r4.16xlarge
+      - r5.large
+      - r5.metal
+      - r5.xlarge
+      - r5a.large
+      - r5a.xlarge
+      - r5ad.large
+      - r5ad.xlarge
+      - r5b.large
+      - r5b.metal
+      - r5b.xlarge
+      - r5n.large
+      - r5n.metal
+      - r5n.xlarge
+      - r5.2xlarge
+      - r5a.2xlarge
+      - r5ad.2xlarge
+      - r5b.2xlarge
+      - r5n.2xlarge
+      - r5.4xlarge
+      - r5a.4xlarge
+      - r5ad.4xlarge
+      - r5b.4xlarge
+      - r5n.4xlarge
+      - r5.8xlarge
+      - r5a.8xlarge
+      - r5ad.8xlarge
+      - r5b.8xlarge
+      - r5n.8xlarge
+      - r5.12xlarge
+      - r5a.12xlarge
+      - r5ad.12xlarge
+      - r5b.12xlarge
+      - r5n.12xlarge
+      - r5.16xlarge
+      - r5a.16xlarge
+      - r5ad.16xlarge
+      - r5b.16xlarge
+      - r5n.16xlarge
+      - r5.24xlarge
+      - r5a.24xlarge
+      - r5ad.24xlarge
+      - r5b.24xlarge
+      - r5n.24xlarge
+      - r5d.large
+      - r5d.metal
+      - r5d.xlarge
+      - r5dn.large
+      - r5dn.metal
+      - r5dn.xlarge
+      - r5d.2xlarge
+      - r5dn.2xlarge
+      - r5d.4xlarge
+      - r5dn.4xlarge
+      - r5d.8xlarge
+      - r5dn.8xlarge
+      - r5d.12xlarge
+      - r5dn.12xlarge
+      - r5d.16xlarge
+      - r5dn.16xlarge
+      - r5d.24xlarge
+      - r5dn.24xlarge
+      - z1d.large
+      - z1d.metal
+      - z1d.xlarge
+      - z1d.2xlarge
+      - z1d.3xlarge
+      - z1d.6xlarge
+      - z1d.12xlarge
+      - x1.16xlarge
+      - x1.32xlarge
+      - x1e.xlarge
+      - x1e.2xlarge
+      - x1e.4xlarge
+      - x1e.8xlarge
+      - x1e.16xlarge
+      - x1e.32xlarge
+      - u-6tb1.56xlarge
+      - u-12tb1.112xlarge
+      - u-6tb1.112xlarge
+      - u-9tb1.112xlarge
+  DatabasePassword:
+    Description: >-
+      [Required] Aurora database admin password for WordPress - Between 8-32
+      characters; Include at least one digit, upper case letter and no special
+      characters. Please check that the selected instance type is available in
+      your region.
+    Type: String
+    MinLength: 8
+    MaxLength: 32
+    AllowedPattern: '(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])^([a-zA-Z0-9]{8,32})$'
+    ConstraintDescription: >-
+      Your database admin password must be between 8 and 32 characters, include
+      at least one. digit, upper case letter and no special characters.
+    NoEcho: true
+  DatabaseInstanceClass:
+    Description: Select the instance type for your application database.
+    Type: String
+    Default: db.t3.medium
+    AllowedValues:
+      - db.r4.large
+      - db.r4.xlarge
+      - db.r4.2xlarge
+      - db.r4.4xlarge
+      - db.r4.8xlarge
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
+      - db.r5.8xlarge
+      - db.r5.12xlarge
+      - db.t2.small
+      - db.t2.medium
+      - db.t3.small
+      - db.t3.medium
+  MultiAZ:
+    Description: Create replica in a different Availability zone.
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    ConstraintDescription: Multi-AZ must be true or false.
+Conditions:
+  AlwaysTrue: !Equals 
+    - true
+    - true
+  AuroraMultiAZ: !Equals 
+    - !Ref MultiAZ
+    - 'true'
+Mappings:
+  RegionMap:
+    us-east-1:
+      AMI: ami-03c232f12f518ddc2
+    us-gov-east-1:
+      AMI: ami-05657a68b072d0c76
+    us-gov-west-1:
+      AMI: ami-026255253b00f2064
+    us-east-2:
+      AMI: ami-05ceb969275d0c8aa
+    us-west-1:
+      AMI: ami-04b438d2c909e76b6
+    us-west-2:
+      AMI: ami-06a3125ed4d4f4c15
+    ca-central-1:
+      AMI: ami-0f7c5799b6368284b
+    eu-central-1:
+      AMI: ami-06beb8387156f8cf6
+    eu-west-1:
+      AMI: ami-05d3963702197ab19
+    eu-west-2:
+      AMI: ami-0dab606c96d2ae0e2
+    eu-west-3:
+      AMI: ami-085f04c0c5d310919
+    eu-north-1:
+      AMI: ami-0ad4941b58f2b2e52
+    ap-southeast-1:
+      AMI: ami-0014e8cb0613991e2
+    ap-southeast-2:
+      AMI: ami-0304e8ed3d7689736
+    ap-south-1:
+      AMI: ami-03f8b8fa66a4934a6
+    ap-northeast-1:
+      AMI: ami-0a9a83e36ef710411
+    ap-northeast-2:
+      AMI: ami-097315893fad83bef
+    ap-east-1:
+      AMI: ami-0f4eb199ff0856bd6
+
+Resources:
+  ApplicationLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: !Sub "afg-alb-${AWS::Region}" 
+      Subnets: 
+        - !ImportValue afg-network-stack-PubSubnet1ID
+        - !ImportValue afg-network-stack-PubSubnet2ID
+      SecurityGroups: 
+        - !ImportValue afg-network-stack-ELBSecurityGroup
+        - !ImportValue afg-network-stack-AFGLaunchSecurityGroup   
+        - !ImportValue afg-network-stack-SecurityGroupDB       
+        - !ImportValue afg-network-stack-SharedSecurityGroup
+  AFGALBHTTPListener2:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+       - Type: "redirect"
+         RedirectConfig:
+           Protocol: "HTTPS"
+           Port: 443
+           Host: "#{host}"
+           Path: "/#{path}"
+           Query: "#{query}"
+           StatusCode: "HTTP_301"
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: "HTTP"
+  AFGALBHTTPSListener3:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: "forward"
+          TargetGroupArn: !Ref AFGALBTargetGroup   
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref HTTPSCertificateArn
+      SslPolicy: "ELBSecurityPolicy-2016-08"      
+  AFGALBTargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 5
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId: !ImportValue afg-network-stack-VPCID
+  AFGASGSNSTopic:
+    Description: This is the SNS Topic for AFG Auto Scaling purposes
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: !Ref OperatorEMail1
+        Protocol: "email"
+      - Endpoint: !Ref OperatorEMail2
+        Protocol: "email"
+      - Endpoint: !Ref OperatorEMail3
+        Protocol: "email"              
+  AFGLaunchConfig: 
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Description: Launch Configuration for front end instances.
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    DependsOn:
+      - DatabaseInstance
+    Properties:
+      KeyName: !Ref SSHKeyName
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - AMI
+      InstanceType: !Ref InstancesType
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvdc
+          Ebs:
+            VolumeType: !Ref InstancesDataDiskType
+            VolumeSize: !Ref InstancesDataDiskSize
+      SecurityGroups: 
+        - !ImportValue afg-network-stack-AFGLaunchSecurityGroup
+        - !ImportValue afg-network-stack-SharedSecurityGroup
+      AssociatePublicIpAddress: 'true'
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash
+            - |-
+
+              #PROVISIONER_PEER_PASSWORD_INPUT=
+            - !Ref 'AWS::AccountId'
+            - ' '
+            - !Ref 'AWS::StackId'
+            - ' '
+            - !Ref 'AWS::Region'
+            - |-
+
+              #PROVISIONER_PEER_PASSWORD=
+            - !Ref DatabasePassword
+            - |-
+
+              #PROVISIONER_SHARED_UNIQUE_ID_INPUT=
+            - !Ref 'AWS::AccountId'
+            - ' '
+            - !Ref 'AWS::StackId'
+            - ' '
+            - !Ref 'AWS::Region'
+            - |-
+
+              # PROVISIONER_CFN_RESOURCE=AFGLaunchConfig
+            - |-
+
+              # PROVISIONER_CFN_STACK=
+            - !Ref 'AWS::StackName'
+            - |-
+
+              # PROVISIONER_CFN_REGION=
+            - !Ref 'AWS::Region'
+            - |-
+
+              # PROVISIONER_DATA_DISK=/dev/xvdc
+            - |-
+
+              #PROVISIONER_TIER=frontend_aurora
+            - |-
+
+              #PROVISIONER_PEER_ADDRESS=
+            - !GetAtt 
+              - DatabaseCluster
+              - Endpoint.Address
+            - |-
+
+              #PROVISIONER_APP_PASSWORD=
+            - !Ref ApplicationPassword
+  AFGASCGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      VPCZoneIdentifier:
+        - !ImportValue afg-network-stack-PubSubnet1ID
+        - !ImportValue afg-network-stack-PubSubnet2ID 
+      LaunchConfigurationName: !Ref AFGLaunchConfig
+      MinSize: '1'
+      MaxSize: '4'
+      DesiredCapacity: '2'  
+      HealthCheckGracePeriod: 60          
+      TargetGroupARNs:
+        - !Ref AFGALBTargetGroup
+  AFGASCInstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable HTTP, HTTPS ingress only from ELB
+      VpcId: !ImportValue afg-network-stack-VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          SourceSecurityGroupId: !ImportValue afg-network-stack-AFGLaunchSecurityGroup           
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          SourceSecurityGroupId: !ImportValue afg-network-stack-AFGLaunchSecurityGroup
+        - IpProtocol: tcp
+          FromPort: '3306'
+          ToPort: '3306'
+          SourceSecurityGroupId: !ImportValue afg-network-stack-SecurityGroupDB 
+  DatabaseSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Database instance subnet group.
+      SubnetIds:
+        - !ImportValue afg-network-stack-PriSubnetID
+        - !ImportValue afg-network-stack-SecondPriSubnetID
+  DatabaseClusterParameterGroup:
+    Type: 'AWS::RDS::DBClusterParameterGroup'
+    Properties:
+      Description: Configure database character set and collation.
+      Family: aurora-mysql5.7
+      Parameters:
+        character_set_client: utf8mb4
+        character_set_connection: utf8mb4
+        character_set_results: utf8mb4
+        character_set_server: utf8mb4
+        character_set_database: utf8mb4
+        collation_connection: utf8mb4_general_ci
+        collation_server: utf8mb4_general_ci
+  DatabaseCluster:
+    Type: 'AWS::RDS::DBCluster'
+    Properties:
+      Engine: aurora-mysql
+      EngineVersion: '5.7'
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      MasterUsername: root
+      MasterUserPassword: !Ref DatabasePassword
+      DBClusterParameterGroupName: !Ref DatabaseClusterParameterGroup
+      VpcSecurityGroupIds:
+        - !ImportValue afg-network-stack-SecurityGroupDB
+        - !ImportValue afg-network-stack-SharedSecurityGroup
+        - !ImportValue afg-network-stack-AFGLaunchSecurityGroup
+  DatabaseInstance:
+    Type: 'AWS::RDS::DBInstance'
+    DeletionPolicy: Delete
+    Properties:
+      Engine: aurora-mysql
+      EngineVersion: '5.7'
+      DBClusterIdentifier: !Ref DatabaseCluster
+      DBInstanceIdentifier: !Join 
+        - ''
+        - - !Ref 'AWS::StackName'
+          - '-Database'
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      DBInstanceClass: !Ref DatabaseInstanceClass
+      Tags:
+        - Value: wordpress-database
+          Key: role
+  DatabaseReplicaInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Condition: AuroraMultiAZ
+    DeletionPolicy: Delete
+    Properties:
+      Engine: aurora-mysql
+      EngineVersion: '5.7'
+      DBClusterIdentifier: !Ref DatabaseCluster
+      DBInstanceIdentifier: !Join 
+        - ''
+        - - !Ref 'AWS::StackName'
+          - '-DatabaseReplica'
+      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      DBInstanceClass: !Ref DatabaseInstanceClass
+      Tags:
+        - Value: wordpress-database-replica
+          Key: role
+Outputs:
+  LoadBalancerArn:
+    Description: URL of the website
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+    Export:
+      Name: !Sub '${AWS::StackName}-AFGApplicationLoadBalancer'  
+  HostedZoneId:
+    Description: ELB ZoneID to be used by Route53
+    Value: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+    Export:
+      Name: !Sub '${AWS::StackName}-CanonicalHostedZoneID'    
